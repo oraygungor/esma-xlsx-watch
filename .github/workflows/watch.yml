@@ -2,9 +2,8 @@ name: Watch ESMA XLSX
 
 on:
   schedule:
-    # Her 6 saatte bir (UTC). İstersen değiştir.
-    - cron: "0 */6 * * *"
-  workflow_dispatch: {}
+    - cron: "0 */6 * * *"   # 6 saatte bir (UTC)
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,6 +11,7 @@ permissions:
 jobs:
   watch:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,21 +22,28 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install requests
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
 
       - name: Run watcher
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
-        run: python watch_esma.py
+        run: |
+          python watch_esma.py
 
       - name: Debug: show files
         run: |
           echo "PWD: $(pwd)"
           ls -la
           echo "---- last_hash.txt ----"
-          test -f last_hash.txt && cat last_hash.txt || echo "last_hash.txt not found"
+          if [ -f last_hash.txt ]; then
+            cat last_hash.txt
+          else
+            echo "last_hash.txt not found"
+          fi
           echo "---- git status ----"
           git status --porcelain
 
@@ -45,10 +52,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Stage last_hash.txt (may be new/untracked)
           git add -A last_hash.txt || true
 
-          # If nothing to commit, exit
           if [ -z "$(git status --porcelain)" ]; then
             echo "No repo changes to commit."
             exit 0
