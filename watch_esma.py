@@ -30,9 +30,9 @@ def save_hash(h: str) -> None:
 
 
 def send_email(subject: str, body: str) -> None:
-    smtp_user = os.environ["SMTP_USER"]
-    smtp_pass = os.environ["SMTP_PASS"]
-    to_email = os.environ["TO_EMAIL"]
+    smtp_user = os.environ["oray.gungor@gmail.com"]
+    smtp_pass = os.environ["jgda opas tjmx krxs"]
+    to_email = os.environ["oray.gungor@gmail.com"]
 
     msg = EmailMessage()
     msg["From"] = smtp_user
