@@ -1,62 +1,11 @@
-name: Watch ESMA XLSX
+name: YAML sanity check
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
   workflow_dispatch: {}
 
-permissions:
-  contents: write
-
 jobs:
-  watch:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
-
-      - name: Run watcher
-        env:
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
-        run: |
-          python watch_esma.py
-
-      - name: Debug: show files
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la
-          echo "---- last_hash.txt ----"
-          if [ -f last_hash.txt ]; then
-            cat last_hash.txt
-          else
-            echo "last_hash.txt not found"
-          fi
-          echo "---- git status ----"
-          git status --porcelain
-
-      - name: Commit updated hash (if changed)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add -A last_hash.txt || true
-
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "No repo changes to commit."
-            exit 0
-          fi
-
-          git commit -m "Update last_hash"
-          git push
+      - name: Hello
+        run: echo "OK"
