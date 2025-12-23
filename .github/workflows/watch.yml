@@ -31,6 +31,15 @@ jobs:
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
         run: python watch_esma.py
 
+    - name: Debug: show files
+        run: |
+          echo "PWD: $(pwd)"
+          ls -la
+          echo "---- last_hash.txt ----"
+          test -f last_hash.txt && cat last_hash.txt || echo "last_hash.txt not found"
+          echo "---- git status ----"
+          git status --porcelain
+          
       - name: Commit updated hash (if changed)
         run: |
           if git diff --quiet; then
