@@ -2,7 +2,7 @@ name: Watch ESMA XLSX
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *"   # 6 saatte bir (UTC)
   workflow_dispatch: {}
 
 permissions:
@@ -23,21 +23,28 @@ jobs:
       - name: Install deps
         run: python -m pip install --upgrade pip requests
 
-      - name: Run watcher
+      - name: Run watcher (TEST_MODE enabled)
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          TEST_MODE: "true"
         run: python watch_esma.py
 
-      - name: Debug (optional)
+      - name: Debug
         run: ls -la
 
-      - name: Git config
-        run: bash -lc 'git config user.name "github-actions[bot]" && git config user.email "github-actions[bot]@users.noreply.github.com"'
+      - name: Commit & push last_hash.txt if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Stage hash file
-        run: bash -lc 'git add -A last_hash.txt || true'
+          git add -A last_hash.txt || true
 
-      - name: Commit & push if changed
-        run: bash -lc 'if git status --porcelain | grep -q .; then git commit -m "Update last_hash" && git push; else echo "No repo changes to commit."; fi'
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No repo changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Update last_hash"
+          git push
